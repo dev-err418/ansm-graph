@@ -2,6 +2,7 @@ from ariadne import QueryType, make_executable_schema, gql
 from ariadne.asgi import GraphQL
 from typing import List, Optional
 import asyncio
+from scrapper import get_ansm_content
 
 # Assuming you have these functions implemented
 from index_builder import build_graph
@@ -36,29 +37,26 @@ def resolve_medicaments(_, info, CIS=None, limit=None, from_=None, date_AMM=None
 
     if CIS:
         results = {k: v for k, v in results.items() if k in CIS}
-    # Apply other filters...
 
-    # Convert dictionary to list of values
     results = list(results.values())
 
     if from_ is not None:
         results = results[from_:]
     if limit is not None:
         results = results[:limit]
-        
-    print(results)
 
     return results
 
-
-
-@query.field("presentations")
-def resolve_presentations(_, info, CIP=None, limit=None, from_=None, libelle=None,
-                          statut_admin=None, etat_commercialisation=None,
-                          indications_remboursement=None):
-    results = graph['presentations']
+@query.field("substances")
+def resolve_substances(_, info, codes_substances=None, limit=None, from_=None, denomination=None):
+    results = graph['substances']
     
-    # Apply filters...
+    if codes_substances:
+        results = {k: v for k, v in results.items() if k in codes_substances}
+    
+    results = list(results.values())
+    
+    print(results)
     
     if from_ is not None:
         results = results[from_:]
@@ -67,9 +65,11 @@ def resolve_presentations(_, info, CIP=None, limit=None, from_=None, libelle=Non
     
     return results
 
-@query.field("substances")
-def resolve_substances(_, info, codes_substances=None, limit=None, from_=None, denomination=None):
-    results = graph['substances']
+@query.field("presentations")
+def resolve_presentations(_, info, CIP=None, limit=None, from_=None, libelle=None,
+                          statut_admin=None, etat_commercialisation=None,
+                          indications_remboursement=None):
+    results = graph['presentations']
     
     # Apply filters...
     
@@ -92,6 +92,14 @@ def resolve_groupes_generiques(_, info, ids=None, limit=None, from_=None, libell
         results = results[:limit]
     
     return results
+
+@query.field("ansmContent")
+async def resolve_ansm_content(_, info, id: int):
+    try:
+        content = await get_ansm_content(id)
+        return {"content": content}
+    except Exception as e:
+        return {"error": str(e)}
 
 schema = make_executable_schema(type_defs, query)
 graph = asyncio.run(build_graph())

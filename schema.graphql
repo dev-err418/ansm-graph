@@ -64,6 +64,11 @@ type Medicament {
     groupes_generiques: [GroupeGenerique!]!
 }
 
+type AnsmContentResponse {
+  content: String
+  error: String
+}
+
 type Presentation {
     """
     Code Identifiant de Présentation à 7 chiffres.
@@ -204,6 +209,7 @@ input StringFilter {
 }
 
 type Query {
+    ansmContent(id: ID!): AnsmContentResponse
     medicaments(
         CIS: [ID!],
         limit: Int, 
