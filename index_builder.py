@@ -1,4 +1,4 @@
-import os
+import csv
 import asyncio
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
@@ -165,6 +165,17 @@ async def build_graph():
         meds.pop(3)
         g["princeps"], g["generiques"], g["generiques_complementarite_posologique"], g["generiques_substituables"] = meds
         groupesGeneriquesById[id] = g
+
+    with open("ansm.csv", mode="r", newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            specid = row['specid']
+            indications = row['indications']
+            posologie = row['posologie']
+            medicament = indexes["medicaments"]._indexes['CIS'].get(specid)
+            if medicament:
+                medicament.indications = indications
+                medicament.posologie = posologie
 
     graph = {
         "substances": {code: substances[0] for code, substances in indexes["substances"]._indexes['code_substance'].items()},

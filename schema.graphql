@@ -62,6 +62,8 @@ type Medicament {
     Les groupes génériques auxquel le médicament appartient.
     """
     groupes_generiques: [GroupeGenerique!]!
+    posologie: String
+    indications: String
 }
 
 type AnsmContentResponse {
